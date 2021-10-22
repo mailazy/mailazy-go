@@ -14,15 +14,13 @@ type SenderClient struct {
 	defaultEndpoint string
 }
 
-func NewSenderClient(key, secret string, timeout time.Duration) *SenderClient {
-	var httClient = &http.Client{
-		Timeout: timeout,
-	}
+func NewSenderClient(key, secret string) *SenderClient {
 	header := http.Header{}
 	header.Set(APIKeyHeaderKey, key)
 	header.Set(APISecretHeaderKey, secret)
 
-	cli := httpClient{client: *httClient}
+	cli := httpClient{client: http.Client{}}
+
 	return &SenderClient{Client: &cli, header: header, defaultEndpoint: DefaultEndpoint}
 }
 
@@ -30,12 +28,24 @@ type SenderClientOptions struct {
 	Key        string
 	Secret     string
 	Endpoint   string
-	timeout time.Duration
+	timeout *time.Duration
 }
 
 func NewSenderClientWithOptions(ops *SenderClientOptions) *SenderClient {
-	client := NewSenderClient(ops.Secret, ops.Key, ops.timeout)
-	return &SenderClient{Client: client.Client, header: client.header, defaultEndpoint: ops.Endpoint}
+	client := NewSenderClient(ops.Secret, ops.Key)
+
+	if ops.timeout != nil {
+		var httClient = &http.Client{
+			Timeout: *ops.timeout,
+		}
+		cli := httpClient{client: *httClient}
+		client.Client = &cli
+	}
+
+	if ops.Endpoint != "" {
+		client.defaultEndpoint = ops.Endpoint
+	}
+	return client
 }
 
 func (sc *SenderClient) Send(req *SendMailRequest) (*SendMailResponse, *SendMailError) {
