@@ -1,35 +1,79 @@
 package mailazy
 
 import (
-	"github.com/kunal-saini/httpman"
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"time"
 )
 
 type SenderClient struct {
-	Client *httpman.Httpman
+	Client *httpClient
+	header http.Header
+	defaultEndpoint string
 }
 
 func NewSenderClient(key, secret string) *SenderClient {
-	client := httpman.New(DefaultEndpoint).SetHeader(APIKeyHeaderKey, key).SetHeader(APISecretHeaderKey, secret)
-	return &SenderClient{Client: client}
+	header := http.Header{}
+	header.Set(APIKeyHeaderKey, key)
+	header.Set(APISecretHeaderKey, secret)
+
+	cli := httpClient{client: http.Client{}}
+
+	return &SenderClient{Client: &cli, header: header, defaultEndpoint: DefaultEndpoint}
 }
 
 type SenderClientOptions struct {
 	Key        string
 	Secret     string
 	Endpoint   string
+	timeout *time.Duration
 }
 
 func NewSenderClientWithOptions(ops *SenderClientOptions) *SenderClient {
-	client := httpman.New(ops.Endpoint).SetHeader(APIKeyHeaderKey, ops.Key).SetHeader(APISecretHeaderKey, ops.Secret)
-	return &SenderClient{Client: client}
+	client := NewSenderClient(ops.Secret, ops.Key)
+
+	if ops.timeout != nil {
+		var httClient = &http.Client{
+			Timeout: *ops.timeout,
+		}
+		cli := httpClient{client: *httClient}
+		client.Client = &cli
+	}
+
+	if ops.Endpoint != "" {
+		client.defaultEndpoint = ops.Endpoint
+	}
+	return client
 }
 
 func (sc *SenderClient) Send(req *SendMailRequest) (*SendMailResponse, *SendMailError) {
 	resp := new(SendMailResponse)
-	err := new(SendMailError)
-	request, _ := sc.Client.NewRequest().Post(req.Path).BodyJSON(req.Payload).Decode(resp, err)
-	if request.StatusCode != 202 || len(err.Error) != 0 {
-		return nil, err
+	errSendMail := new(SendMailError)
+
+	if body , err := json.Marshal(req.Payload); err == nil {
+		response, err := sc.Client.Post(sc.defaultEndpoint + req.Path,
+			"application/json", bytes.NewBuffer(body), sc.header)
+		if err != nil {
+			//timeout reached
+			return nil, nil
+		}
+
+		jsonData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, nil
+		}
+
+		if response.StatusCode != 202 {
+			if err = json.Unmarshal(jsonData, errSendMail); err == nil {
+				return nil, errSendMail
+			}
+		}
+
+		if err = json.Unmarshal(jsonData, resp); err == nil {
+			return resp, nil
+		}
 	}
-	return resp, nil
+	return nil, nil
 }

@@ -52,3 +52,4 @@ func NewSendMailRequestWithParams(to, from, subject, textContent, htmlContent st
 
 	return r
 }
+

@@ -6,8 +6,6 @@ github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/json-iterator/go v1.1.10 h1:Kz6Cvnvv2wGdaG/V8yMvfkmNiXq9Ya2KUv4rouJJr68=
 github.com/json-iterator/go v1.1.10/go.mod h1:KdQUCv79m/52Kvf8AW2vK1V8akMuk1QjK/uOdHXbAo4=
-github.com/kunal-saini/httpman v0.0.0-20210303114647-7ed3121dec4a h1:A72HEY0B/djX8k1JNojTCvw6ZE3enUN+F9iXvU8CGnA=
-github.com/kunal-saini/httpman v0.0.0-20210303114647-7ed3121dec4a/go.mod h1:8MCf7R1LcQYr8S6RlrtRwZaWdbTiwr+fJ6ICB0F3Sck=
 github.com/kunal-saini/httpman v0.1.0 h1:WcHK77nD5gHS7ua2n1M5VzLb5uKgd4SxGu9wK8j4iS0=
 github.com/kunal-saini/httpman v0.1.0/go.mod h1:8MCf7R1LcQYr8S6RlrtRwZaWdbTiwr+fJ6ICB0F3Sck=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 h1:ZqeYNhU3OHLH3mGKHDcjJRFFRrJa6eAM5H+CtDdOsPc=
