@@ -14,9 +14,9 @@ func NewSenderClient(key, secret string) *SenderClient {
 }
 
 type SenderClientOptions struct {
-	Key        string
-	Secret     string
-	Endpoint   string
+	Key      string
+	Secret   string
+	Endpoint string
 }
 
 func NewSenderClientWithOptions(ops *SenderClientOptions) *SenderClient {
@@ -27,8 +27,11 @@ func NewSenderClientWithOptions(ops *SenderClientOptions) *SenderClient {
 func (sc *SenderClient) Send(req *SendMailRequest) (*SendMailResponse, *SendMailError) {
 	resp := new(SendMailResponse)
 	err := new(SendMailError)
-	request, _ := sc.Client.NewRequest().Post(req.Path).BodyJSON(req.Payload).Decode(resp, err)
-	if request.StatusCode != 202 || len(err.Error) != 0 {
+	httpResponse, reqErr := sc.Client.NewRequest().Post(req.Path).BodyJSON(req.Payload).Decode(resp, err)
+	if httpResponse == nil || reqErr != nil || httpResponse.StatusCode != 202 || len(err.Error) != 0 {
+		if reqErr != nil {
+			return nil, &SendMailError{Error: reqErr.Error()}
+		}
 		return nil, err
 	}
 	return resp, nil
